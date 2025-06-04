@@ -40,18 +40,43 @@ const program = createProgram(gl, vertexShaderSrc, fragmentShaderSrc);
 gl.useProgram(program);
 
 const uResolution = gl.getUniformLocation(program, "u_resolution");
-gl.uniform2f(uResolution, canvas.width, canvas.height);
+const uTime = gl.getUniformLocation(program, "u_time");
 
-const positionBuffer = gl.createBuffer();
-gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+function init() {
+  // Set resolution once
+  gl.uniform2f(uResolution, canvas.width, canvas.height);
+  
+  const positionBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+  
+  const aPosition = gl.getAttribLocation(program, "a_position");
+  gl.enableVertexAttribArray(aPosition);
+  gl.vertexAttribPointer(aPosition, 2, gl.FLOAT, false, 0, 0);
+  
+  // Draw
+  gl.viewport(0, 0, canvas.width, canvas.height);
+  gl.clearColor(0, 0, 0, 1);
+  gl.clear(gl.COLOR_BUFFER_BIT);
+  gl.drawArrays(gl.TRIANGLES, 0, 3);
+}
 
-const aPosition = gl.getAttribLocation(program, "a_position");
-gl.enableVertexAttribArray(aPosition);
-gl.vertexAttribPointer(aPosition, 2, gl.FLOAT, false, 0, 0);
+function render(time: number) {
+  const seconds = time * 0.001; // convert milliseconds to seconds
+  
+  // Set the time uniform each frame
+  gl.uniform1f(uTime, seconds);
 
-// Draw
-gl.viewport(0, 0, canvas.width, canvas.height);
-gl.clearColor(0, 0, 0, 1);
-gl.clear(gl.COLOR_BUFFER_BIT);
-gl.drawArrays(gl.TRIANGLES, 0, 3);
+  gl.viewport(0, 0, canvas.width, canvas.height);
+  gl.clear(gl.COLOR_BUFFER_BIT);
+  
+  // Draw the triangle
+  gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+  requestAnimationFrame(render);
+}
+
+init();
+
+// Start the animation
+requestAnimationFrame(render);
